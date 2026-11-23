@@ -38,27 +38,47 @@ jobs:
           set +e
           BUNDLE=$(cat "$RUNNER_TEMP/bundle.txt")
           APP=$(find "$RUNNER_TEMP/dd/Build/Products/Release-iphonesimulator" -maxdepth 1 -name "*.app" | head -1)
-          mkdir -p out
+          echo "bundle=$BUNDLE app=$APP"
+          mkdir -p out logs
           shoot() {
             NAME="$1"; TYPE="$2"
             UDID=$(xcrun simctl create "$NAME" "$TYPE" com.apple.CoreSimulator.SimRuntime.iOS-27-0)
+            if [ -z "$UDID" ]; then echo "create failed: $NAME $TYPE"; return; fi
+            echo "created $NAME udid=$UDID"
             xcrun simctl boot "$UDID" || true
             xcrun simctl bootstatus "$UDID" -b
-            xcrun simctl install "$UDID" "$APP"
-            xcrun simctl launch --console-pty "$UDID" "$BUNDLE" > "$RUNNER_TEMP/$NAME.log" 2>&1 &
-            sleep 45
+            sleep 10
+            echo "install $NAME:"; xcrun simctl install "$UDID" "$APP"
+            for attempt in 1 2 3; do
+              echo "launch attempt $attempt for $NAME:"
+              xcrun simctl launch "$UDID" "$BUNDLE" 2>&1
+              sleep 40
+              COUNT=$(xcrun simctl spawn "$UDID" launchctl list 2>/dev/null | grep -c "$BUNDLE")
+              echo "running_count=$COUNT"
+              if [ "${COUNT:-0}" -gt 0 ]; then break; fi
+              echo "not running, retrying"
+            done
+            sleep 5
             xcrun simctl io "$UDID" screenshot "out/$NAME.png"
+            xcrun simctl spawn "$UDID" log show --last 4m --style compact \
+              --predicate 'processImagePath CONTAINS "TideMath" OR senderImagePath CONTAINS "TideMath"' \
+              2>/dev/null | tail -60 > "logs/$NAME-app.log" || true
+            xcrun simctl spawn "$UDID" log show --last 4m --style compact \
+              --predicate 'eventMessage CONTAINS "TideMath"' 2>/dev/null | tail -60 > "logs/$NAME-sys.log" || true
+            ls -1t ~/Library/Logs/DiagnosticReports 2>/dev/null | head -5 > "logs/$NAME-crash-index.txt" || true
             xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
-            tail -5 "$RUNNER_TEMP/$NAME.log" || true
+            xcrun simctl shutdown "$UDID" 2>/dev/null || true
           }
           shoot "iphone-16-pro-max" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max
           shoot "ipad-pro-13-m4" com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB
-          ls -l out
+          ls -l out logs
           for f in out/*.png; do sips -g pixelWidth -g pixelHeight "$f"; done
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: tidemath-shots
-          path: out
+          path: |
+            out
+            logs
           if-no-files-found: warn
