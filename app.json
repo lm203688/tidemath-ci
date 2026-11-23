@@ -8,8 +8,10 @@
     "newArchEnabled": true,
     "description": "Offline NOAA tide charts, high and low tide tables and fishing solunar windows. One purchase, no account, no ads, no subscription.",
     "assetBundlePatterns": ["**/*"],
+    "icon": "./assets/icon.png",
     "ios": {
       "bundleIdentifier": "com.lixing.tidemath",
+      "icon": "./assets/icon.png",
       "supportsTablet": true,
       "deploymentTarget": "16.4",
       "buildNumber": "1",
