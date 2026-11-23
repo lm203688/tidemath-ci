@@ -113,8 +113,11 @@ jobs:
             2>&1 | tail -80
 
       - name: Export ipa
+        env:
+          PROFILE_UUID: ${{ secrets.PROFILE_MAIN_UUID }}
         run: |
           set -o pipefail
+          echo "profile=$PROFILE_UUID bundle=$BUNDLE_ID"
           cat > "$RUNNER_TEMP/export.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
