@@ -41,6 +41,15 @@ export function fmtTime(utcMs, tzCorrHours, observedDst, use24) {
   return h + ':' + m + ' ' + suffix;
 }
 
+// "4:54 – 6:24 AM" when both ends share a meridiem, else the full "4:54 AM – 8:12 PM".
+export function fmtSpan(fromUtcMs, toUtcMs, tzCorrHours, observedDst, use24) {
+  const a = fmtTime(fromUtcMs, tzCorrHours, observedDst, use24);
+  const b = fmtTime(toUtcMs, tzCorrHours, observedDst, use24);
+  if (use24) return a + ' – ' + b;
+  if (a.slice(-2) === b.slice(-2)) return a.slice(0, -3) + ' – ' + b;
+  return a + ' – ' + b;
+}
+
 export function fmtDay(utcMs, tzCorrHours, observedDst) {
   const d = new Date(localMs(utcMs, tzCorrHours, observedDst));
   const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

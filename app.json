@@ -14,7 +14,7 @@
       "icon": "./assets/icon.png",
       "supportsTablet": true,
       "deploymentTarget": "16.4",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "config": {
         "usesNonExemptEncryption": false
       },

@@ -16,7 +16,7 @@ import AiAssist from './src/AiAssist';
 import TideChart from './src/TideChart';
 import { colors, radius, shadow, type } from './src/theme';
 import { loadStore, saveStore } from './src/store';
-import { DAY, countdown, fmtDay, fmtHeight, fmtRange, fmtTime, localDayStartMs } from './src/format';
+import { DAY, countdown, fmtDay, fmtHeight, fmtRange, fmtSpan, fmtTime, localDayStartMs } from './src/format';
 import { buildStation, hilo, readHeight } from './src/engine/station';
 import { dayScore, lunarPhase, solunarWindows, sunTimes, moonTimes } from './src/engine/solunar';
 
@@ -208,7 +208,7 @@ export default function App() {
       </View>
       {todaySeries ? (
         <View style={{ marginTop: 10 }}>
-          <TideChart points={todaySeries.points} width={chartW} height={150} markers={markers} />
+          <TideChart points={todaySeries.points} width={chartW} height={layout.twoPane ? 210 : 150} markers={markers} />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
             {['00', '06', '12', '18'].map((h) => (
               <Text key={h} style={type.small}>{h}:00</Text>
@@ -275,8 +275,8 @@ export default function App() {
           <Text style={[styles.windowType, { color: w.type === 'major' ? colors.amber : colors.teal }]}>
             {w.type === 'major' ? 'MAJOR' : 'MINOR'}
           </Text>
-          <Text style={styles.windowTime}>
-            {fmtTime(w.from, tz, dst, store.use24)} – {fmtTime(w.to, tz, dst, store.use24)}
+          <Text style={styles.windowTime} numberOfLines={1}>
+            {fmtSpan(w.from, w.to, tz, dst, store.use24)}
           </Text>
           <Text style={styles.windowLabel} numberOfLines={1}>{w.label}</Text>
         </View>
@@ -325,6 +325,8 @@ export default function App() {
           paddingBottom: 40,
           paddingLeft: 16,
           paddingRight: layout.gutter + 16,
+          flexGrow: 1,
+          justifyContent: layout.twoPane ? 'center' : 'flex-start',
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -472,7 +474,7 @@ const styles = {
   scoreSuffix: { fontSize: 10, color: colors.amber, marginLeft: 4 },
   windowRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line },
   windowType: { width: 54, fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
-  windowTime: { width: 128, fontSize: 14, fontWeight: '700', color: colors.ink },
+  windowTime: { width: 138, fontSize: 14, fontWeight: '700', color: colors.ink },
   windowLabel: { flex: 1, fontSize: 12, color: colors.sub },
   forecastRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
   forecastRowActive: { backgroundColor: colors.tealSoft, borderRadius: 10, paddingHorizontal: 8 },
