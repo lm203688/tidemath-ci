@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+ios/
+android/
+dist/
+*.ipa
+*.xcarchive/
+.idea/
+.DS_Store
