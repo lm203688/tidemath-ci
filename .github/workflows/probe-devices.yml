@@ -1,0 +1,28 @@
+name: probe-devices
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: xcode-27
+    timeout-minutes: 15
+    steps:
+      - name: Runtimes
+        run: xcrun simctl list runtimes
+      - name: Device types (iphone/ipad)
+        run: xcrun simctl list devicetypes | grep -Ei 'iPhone 1[5-9]|iPhone Duo|iPad Pro'
+      - name: Existing devices
+        run: xcrun simctl list devices available | head -40
+      - name: Try creating the 6.9 inch phone and 13 inch ipad
+        run: |
+          set +e
+          RT=$(xcrun simctl list runtimes | grep -E 'iOS 27' | sed -E 's/.*(com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+).*/\1/' | head -1)
+          echo "rt=$RT"
+          for T in com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max \
+                   com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max \
+                   com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-8GB \
+                   com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB; do
+            echo "--- $T"
+            xcrun simctl create probe-$(basename $T) "$T" "$RT" 2>&1 | head -2
+          done
