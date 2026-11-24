@@ -83,6 +83,9 @@ jobs:
       - name: Prebuild iOS project
         run: npx expo prebuild --platform ios --clean --non-interactive
 
+      - name: Guard app icon has no alpha (ITMS-90717)
+        run: python3 .github/scripts/check_icon_alpha.py
+
       - name: Check the injected sources landed
         run: |
           set -x
