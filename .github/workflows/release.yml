@@ -157,6 +157,9 @@ jobs:
           plutil -p "$APP/Info.plist" | grep -Ei 'CFBundleIdentifier|CFBundleVersion|CFBundleShortVersionString|UIApplicationSceneManifest' || true
           ls "$APP" | grep -Ei 'noaa|metadata|appintents' || true
           du -sh "$APP"
+          echo "== AppleFM gate =="
+          grep -raq -i "AppleFMModule" "$APP" || { echo "FAIL: on-device assistant module not compiled in"; exit 1; }
+          echo "OK: AppleFM module compiled in"
           codesign -d --entitlements :- "$APP" 2>/dev/null | head -20 || true
 
       - name: Upload to App Store Connect

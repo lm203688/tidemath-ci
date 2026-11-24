@@ -2,19 +2,21 @@
   "expo": {
     "name": "TideMath",
     "slug": "tidemath",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "description": "Offline NOAA tide charts, high and low tide tables and fishing solunar windows. One purchase, no account, no ads, no subscription.",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "icon": "./assets/icon.png",
     "ios": {
       "bundleIdentifier": "com.lixing.tidemath",
       "icon": "./assets/icon.png",
       "supportsTablet": true,
       "deploymentTarget": "16.4",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -25,21 +27,32 @@
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           },
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
-            "NSPrivacyAccessedAPITypeReasons": ["0A2A.1", "3B52.1", "C617.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "0A2A.1",
+              "3B52.1",
+              "C617.1"
+            ]
           },
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
-            "NSPrivacyAccessedAPITypeReasons": ["E174.1", "85F4.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "E174.1",
+              "85F4.1"
+            ]
           }
         ]
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIRequiredDeviceCapabilities": ["arm64"]
+        "UIRequiredDeviceCapabilities": [
+          "arm64"
+        ]
       }
     },
     "plugins": [
