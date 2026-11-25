@@ -1,4 +1,4 @@
-name: release
+﻿name: release
 
 on:
   workflow_dispatch:
@@ -159,6 +159,10 @@ jobs:
           echo "app=$APP"
           plutil -p "$APP/Info.plist" | grep -Ei 'CFBundleIdentifier|CFBundleVersion|CFBundleShortVersionString|UIApplicationSceneManifest' || true
           ls "$APP" | grep -Ei 'noaa|metadata|appintents' || true
+          echo "== app intents gate =="
+          test -d "$APP/Metadata.appintents" || { echo "FAIL: App Intents metadata missing from signed ipa"; exit 1; }
+          grep -raq "TideMathShortcuts" "$APP/Metadata.appintents" || { echo "FAIL: TideMathShortcuts not registered in intent metadata"; exit 1; }
+          echo "OK: App Intents shortcuts registered"
           du -sh "$APP"
           echo "== AppleFM gate =="
           grep -raq -i "AppleFMModule" "$APP" || { echo "FAIL: on-device assistant module not compiled in"; exit 1; }
