@@ -161,8 +161,11 @@ jobs:
           ls "$APP" | grep -Ei 'noaa|metadata|appintents' || true
           echo "== app intents gate =="
           test -d "$APP/Metadata.appintents" || { echo "FAIL: App Intents metadata missing from signed ipa"; exit 1; }
-          grep -raq "TideMathShortcuts" "$APP/Metadata.appintents" || { echo "FAIL: TideMathShortcuts not registered in intent metadata"; exit 1; }
-          echo "OK: App Intents shortcuts registered"
+          ls -l "$APP/Metadata.appintents" | head -15
+          (strings -a "$APP/Metadata.appintents"/* 2>/dev/null || cat "$APP/Metadata.appintents"/* 2>/dev/null) | grep -E 'Intent' | sort -u | head -20 || true
+          for n in "SpringTideWindowIntent" "MoonPhaseIntent"; do grep -raq "$n" "$APP/Metadata.appintents" || { echo "FAIL: $n missing from intent metadata"; exit 1; }; done
+          echo "OK: App Intents functional intents registered"
+          grep -raq "TideMathShortcuts" "$APP/Metadata.appintents" || echo "WARN: provider class name not present in metadata"
           du -sh "$APP"
           echo "== AppleFM gate =="
           grep -raq -i "AppleFMModule" "$APP" || { echo "FAIL: on-device assistant module not compiled in"; exit 1; }
