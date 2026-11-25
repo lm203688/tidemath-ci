@@ -179,3 +179,70 @@ struct TideMathShortcuts: AppShortcutsProvider {
     )
   }
 }
+
+
+// MARK: - Tide phase entity (Spotlight + Siri parameter)
+
+// 潮汐相位是纯天文定义，不需要读站点的调和常数；写成实体让 Siri 能带着参数问。
+@available(iOS 16.0, *)
+struct TidePhaseEntity: AppEntity {
+  static var typeDisplayRepresentation: TypeDisplayRepresentation = TypeDisplayRepresentation(name: "Tide phase")
+  static var defaultQuery = TidePhaseQuery()
+
+  let id: String
+  let summary: String
+  let note: String
+
+  var displayRepresentation: DisplayRepresentation {
+    DisplayRepresentation(title: "\(summary)", subtitle: "\(note)")
+  }
+
+  static let all: [TidePhaseEntity] = [
+    TidePhaseEntity(id: "spring", summary: "Spring tide", note: "New or full moon; range is largest"),
+    TidePhaseEntity(id: "neap", summary: "Neap tide", note: "Quarter moon; range is smallest"),
+    TidePhaseEntity(id: "high", summary: "High water", note: "Peak of the rise"),
+    TidePhaseEntity(id: "low", summary: "Low water", note: "Bottom of the fall"),
+    TidePhaseEntity(id: "flood", summary: "Flood (rising)", note: "Water moving in"),
+    TidePhaseEntity(id: "ebb", summary: "Ebb (falling)", note: "Water moving out"),
+  ]
+}
+
+@available(iOS 18.0, *)
+extension TidePhaseEntity: IndexedEntity {}
+
+@available(iOS 16.0, *)
+struct TidePhaseQuery: EntityQuery {
+  func entities(for identifiers: [String]) async throws -> [TidePhaseEntity] {
+    TidePhaseEntity.all.filter { identifiers.contains($0.id) }
+  }
+
+  func suggestedEntities() async throws -> [TidePhaseEntity] {
+    TidePhaseEntity.all
+  }
+
+  func defaultResult() async -> TidePhaseEntity? {
+    TidePhaseEntity.all.first
+  }
+}
+
+@available(iOS 16.0, *)
+struct TidePhaseMeaningIntent: AppIntent {
+  static var title: LocalizedStringResource = "What a tide phase means"
+  static var description = IntentDescription("Plain-language meaning of a tide phase, and when it repeats.")
+
+  @Parameter(title: "Tide phase")
+  var phase: TidePhaseEntity
+
+  func perform() async throws -> some IntentResult & ProvidesDialog {
+    let cycle: String
+    switch phase.id {
+    case "spring": cycle = "Spring tides come twice a month, within a couple of days of new and full moon."
+    case "neap": cycle = "Neap tides come twice a month, near the first and last quarter."
+    case "high": cycle = "High water repeats roughly every 12 hours 25 minutes at a fixed place."
+    case "low": cycle = "Low water repeats roughly every 12 hours 25 minutes at a fixed place."
+    case "flood": cycle = "Flood runs for about six hours between low and high water."
+    default: cycle = "Ebb runs for about six hours between high and low water."
+    }
+    return .result(dialog: IntentDialog(stringLiteral: "\(phase.summary): \(phase.note). \(cycle)"))
+  }
+}
