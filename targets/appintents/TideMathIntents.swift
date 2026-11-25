@@ -63,6 +63,13 @@ private func phaseOf(_ date: Date) -> (name: String, illum: Double, elong: Doubl
   return (name, illum, elong, min(fromNew, fromFull))
 }
 
+private let dayFormatter: DateFormatter = {
+  let f = DateFormatter()
+  f.locale = Locale(identifier: "en_US_POSIX")
+  f.dateFormat = "EEE, MMM d"
+  return f
+}()
+
 @available(iOS 16.0, *)
 struct MoonPhaseIntent: AppIntent {
   static var title: LocalizedStringResource = "Moon phase and spring tides"
@@ -91,6 +98,46 @@ struct MoonPhaseIntent: AppIntent {
 }
 
 @available(iOS 16.0, *)
+struct SpringTideWindowIntent: AppIntent {
+  static var title: LocalizedStringResource = "Next spring tide windows"
+  static var description: IntentDescription? = IntentDescription(
+    "Finds the next new-moon and full-moon spring tide windows in the next 45 days, so you can plan around the biggest tidal range."
+  )
+  static var openAppWhenRun: Bool = false
+
+  @Parameter(title: "Start", description: "Leave empty for today.")
+  var start: Date?
+
+  static var parameterSummary: some ParameterSummary {
+    Summary("Spring tide windows from \(\.$start)")
+  }
+
+  func perform() async throws -> some IntentResult & ProvidesDialog {
+    let base = start ?? Date()
+    var newBest: (day: Date, dist: Double)?
+    var fullBest: (day: Date, dist: Double)?
+    for offset in 0..<45 {
+      let day = base.addingTimeInterval(Double(offset) * 86400)
+      let p = phaseOf(day)
+      let nearNew = p.elong < 90 || p.elong > 270
+      let dist = nearNew ? min(p.elong, 360 - p.elong) * 29.53 / 360
+                         : abs(180 - p.elong) * 29.53 / 360
+      if nearNew {
+        if newBest == nil || dist < newBest!.dist { newBest = (day, dist) }
+      } else {
+        if fullBest == nil || dist < fullBest!.dist { fullBest = (day, dist) }
+      }
+    }
+    guard let n = newBest, let f = fullBest else {
+      return .result(dialog: "Could not resolve a spring window in the next 45 days.")
+    }
+    let nDay = dayFormatter.string(from: n.day)
+    let fDay = dayFormatter.string(from: f.day)
+    return .result(dialog: "Next spring windows: new moon around \(nDay), full moon around \(fDay). Both give the month's biggest tidal range, about a day either side.")
+  }
+}
+
+@available(iOS 16.0, *)
 struct OpenTideMathIntent: AppIntent {
   static var title: LocalizedStringResource = "Open TideMath"
   static var description: IntentDescription? = IntentDescription(
@@ -114,6 +161,15 @@ struct TideMathShortcuts: AppShortcutsProvider {
       ],
       shortTitle: "Moon phase",
       systemImageName: "moon.stars"
+    )
+    AppShortcut(
+      intent: SpringTideWindowIntent(),
+      phrases: [
+        "When are the spring tides in \(.applicationName)",
+        "Next big tide in \(.applicationName)",
+      ],
+      shortTitle: "Spring tides",
+      systemImageName: "water.waves"
     )
     AppShortcut(
       intent: OpenTideMathIntent(),
