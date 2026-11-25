@@ -163,7 +163,7 @@ jobs:
           test -d "$APP/Metadata.appintents" || { echo "FAIL: App Intents metadata missing from signed ipa"; exit 1; }
           ls -l "$APP/Metadata.appintents" | head -15
           (strings -a "$APP/Metadata.appintents"/* 2>/dev/null || cat "$APP/Metadata.appintents"/* 2>/dev/null) | grep -E 'Intent' | sort -u | head -20 || true
-          for n in "SpringTideWindowIntent" "MoonPhaseIntent"; do grep -raq "$n" "$APP/Metadata.appintents" || { echo "FAIL: $n missing from intent metadata"; exit 1; }; done
+          for n in "SpringTideWindowIntent" "MoonPhaseIntent" "TidePhaseMeaningIntent"; do grep -raq "$n" "$APP/Metadata.appintents" || { echo "FAIL: $n missing from intent metadata"; exit 1; }; done
           echo "OK: App Intents functional intents registered"
           grep -raq "TideMathShortcuts" "$APP/Metadata.appintents" || echo "WARN: provider class name not present in metadata"
           du -sh "$APP"
